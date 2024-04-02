@@ -357,6 +357,32 @@ public final class LoginManager: NSObject {
     dependencies.profileProvider.current = nil
   }
 
+  @objc(newTokenString:)
+  public func replaceAccessToken(
+    newTokenString: String
+  ) {
+    guard let dependencies = try? getDependencies() else { return }
+    guard let currentAccessToken = try? dependencies.accessTokenWallet.current else { return }
+
+    let permissions = currentAccessToken.permissions.map { $0.name }
+    let declinedPermissions = currentAccessToken.declinedPermissions.map { $0.name }
+    let expiredPermissions = currentAccessToken.expiredPermissions.map { $0.name }
+
+    let newAccessToken = AccessToken(
+            tokenString: newTokenString,
+            permissions: permissions,
+            declinedPermissions: declinedPermissions,
+            expiredPermissions: expiredPermissions,
+            appID: currentAccessToken.appID,
+            userID: currentAccessToken.userID,
+            expirationDate: currentAccessToken.expirationDate,
+            refreshDate: currentAccessToken.refreshDate,
+            dataAccessExpirationDate: currentAccessToken.dataAccessExpirationDate
+          )
+    
+    dependencies.accessTokenWallet.current = newAccessToken
+  }
+  
   // MARK: - Helpers
 
   private func handleImplicitCancelOfLogIn() {
